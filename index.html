@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fake News Detector</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      margin: 20px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .real {
+      color: green;
+    }
+
+    .fake {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Fake News Detector</h1>
+    <textarea id="newsInput" rows="6" placeholder="Paste your news content or headline here..."></textarea>
+    <button onclick="checkNews()">Check</button>
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    async function checkNews() {
+      const newsText = document.getElementById('newsInput').value.trim();
+      const resultDiv = document.getElementById('result');
+
+      if (!newsText) {
+        resultDiv.textContent = "Please enter some news text.";
+        resultDiv.className = "result";
+        return;
+      }
+
+      resultDiv.textContent = "Analyzing...";
+      resultDiv.className = "result";
+
+      try {
+        const response = await fetch("http://localhost:5000/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ text: newsText })
+        });
+
+        const data = await response.json();
+
+        if (data.prediction === "Fake") {
+          resultDiv.textContent = "🚫 This is FAKE news!";
+          resultDiv.className = "result fake";
+        } else if (data.prediction === "Real") {
+          resultDiv.textContent = "✅ This is REAL news!";
+          resultDiv.className = "result real";
+        } else {
+          resultDiv.textContent = "Unable to determine.";
+          resultDiv.className = "result";
+        }
+      } catch (error) {
+        console.error(error);
+        resultDiv.textContent = "Error contacting the prediction server.";
+        resultDiv.className = "result";
+      }
+    }
+  </script>
+</body>
+</html>
